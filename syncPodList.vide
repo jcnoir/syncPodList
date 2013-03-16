@@ -1,0 +1,26 @@
+--- !Project
+name: syncPodList
+author: jcnmark6
+version: 1.0
+license: None
+builder: Waf
+builder-options: !WafBuilderOptions
+  build-dir: ~
+  prefix: ~
+  configure-options: ~
+  build-options: ~
+  install-options: ~
+  dist-options: ~
+  clean-options: ~
+  distclean-options: ~
+  uninstall-options: ~
+executable-options:
+  program: 
+  arguments: 
+  working-dir: /media/donnees/dev/syncPodList/
+  environment: []
+files:
+- path: wscript
+- path: src/main.vala
+packages: []
+vapi_dir: []

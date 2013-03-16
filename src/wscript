@@ -1,0 +1,15 @@
+#! /usr/bin/env python
+# encoding: utf-8
+# Jaap Haitsma, 2008
+# Thomas Nagy, 2010
+
+def build(bld):
+    bld(
+            vapi_dirs = '../vapi',
+            includes      = '. src vapi',
+            packages      = 'gee-1.0 libgpod-1.0',
+            target        = 'sync-pod-list',
+            uselib        = 'GPOD GEE',
+            source = bld.path.ant_glob(incl = '*.vala')            
+            )
+
