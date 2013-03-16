@@ -10,9 +10,8 @@ public class IPodDevice : GLib.Object {
         uint plistNb;
         unowned GLib.List<GPod.Playlist> playlists;
 
-        print ("IPodDevice is starting ... \n");
         ipodMountpoint = Environment.get_variable("IPOD_MOUNTPOINT");        
-        stdout.printf ("Ipod mount point %s\n", ipodMountpoint);
+        stdout.printf ("Ipod path (from the IPOD_MOUNTPOINT environment variable) : %s\n", ipodMountpoint);
         try {
             db = GPod.iTunesDB.parse(ipodMountpoint);
             plistNb = db.playlists_number();
