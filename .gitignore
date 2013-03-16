@@ -3,3 +3,4 @@ _build_/
 .lock*
 build/
 *.o
+*.bz2

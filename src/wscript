@@ -4,11 +4,13 @@
 # Thomas Nagy, 2010
 
 def build(bld):
+    print('sub-build ...')
     bld(
-            vapi_dirs = '../vapi',
+            features      = 'c cprogram',
+            vapi_dirs     = '../vapi',
             includes      = '. src vapi',
             packages      = 'gee-1.0 libgpod-1.0',
-            target        = 'sync-pod-list',
+            target        = 'syncPodList',
             uselib        = 'GPOD GEE',
             source = bld.path.ant_glob(incl = '*.vala')            
             )
