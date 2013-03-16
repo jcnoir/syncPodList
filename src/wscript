@@ -9,9 +9,9 @@ def build(bld):
             features      = 'c cprogram',
             vapi_dirs     = '../vapi',
             includes      = '. src vapi',
-            packages      = 'gee-1.0 libgpod-1.0',
+            packages      = 'libgpod-1.0',
             target        = 'syncPodList',
-            uselib        = 'GPOD GEE',
+            uselib        = 'GPOD',
             source = bld.path.ant_glob(incl = '*.vala')            
             )
 

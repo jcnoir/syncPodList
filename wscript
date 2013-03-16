@@ -15,7 +15,6 @@ def options(opt):
 def configure(conf):
     print('configure ...')
     conf.load('compiler_cc vala')
-    conf.check_cfg(package='gee-1.0', uselib_store='GEE', atleast_version='0.6.7', args='--cflags --libs')
     conf.check_cfg(package='libgpod-1.0', uselib_store='GPOD', atleast_version='0.8.2', args='--cflags --libs')
     conf.define('PACKAGE', APPNAME)
     conf.define('VERSION', VERSION)
