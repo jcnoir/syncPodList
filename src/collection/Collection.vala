@@ -2,8 +2,12 @@ using TagInfo;
 
 public class MusicCollection : GLib.Object {
 
-    static int main (string[] args) {
+    private int processedSongCounter = 0 ;
 
+    private Timer timer = new Timer();
+
+
+    static int main (string[] args) {
 
 
         MusicCollection collection;
@@ -29,20 +33,18 @@ public class MusicCollection : GLib.Object {
             stdout.printf(@"\nFolder : $rootFolderPath \n");
 
             var directory = File.new_for_path (rootFolderPath);
-            var enumerator = directory.enumerate_children (FileAttribute.STANDARD_NAME, 0);
+            var enumerator = directory.enumerate_children ("*", 0);
 
             FileInfo file_info;
             while ((file_info = enumerator.next_file ()) != null) {
-                if (file_info.get_file_type() != FileType.DIRECTORY) {
+
+                if (file_info.get_file_type() == FileType.REGULAR ) {
                     stdout.printf("File : %s \n", file_info.get_name());
                     if (isCompatibleExtension( file_info.get_name() )) {
                         displaySongTags( directory.get_child(file_info.get_name()).get_path() );
                     }
-                    else {
-                        stdout.printf ("Extension is NOT compatible.\n" );
-                    }
                 }
-                else {
+                else if (file_info.get_file_type() == FileType.DIRECTORY) {
                     this.listFiles(directory.get_child(file_info.get_name()).get_path());
                 }
             }
@@ -56,16 +58,23 @@ public class MusicCollection : GLib.Object {
     private void displaySongTags(string filename) {
 
         Info info;
+        ulong microseconds;
+        double seconds;
 
         try {
             info = TagInfo.Info.factory_make(filename);
             if ( info.read() ) {
-                stdout.printf( "==> %s - %u - %s - %u - %s \n", info.artist,       
-                               info.year, info.album, info.tracknumber, info.title );
+                this.getSong(info,filename,File.new_for_path
+                             (filename).query_info("*", FileQueryInfoFlags.NONE).get_modification_time());
+                stdout.printf("Processed song counter : %u, ", this.processedSongCounter++);
+                seconds = timer.elapsed (out microseconds);
+                stdout.printf ("Elapsed time : %s seconds, ", seconds.to_string ());
+                stdout.printf ("Average speed : %s seconds/ 1000 songs \n", (1000 * seconds/processedSongCounter).to_string());
+
             }
             else {
 
-                stdout.printf("Parsing failure !   \n");
+                stderr.printf("Parsing failure !   \n");
             }
         }
         catch (Error e) {
@@ -78,4 +87,36 @@ public class MusicCollection : GLib.Object {
         return GLib.Regex.match_simple("(^)(.*)(AAC|AIF|APE|ASF|FLAC|M4A|M4B|M4P|MP3|MP4|MPC|OGA|OGG|TTA|WAV|WMA|WV|SPEEX|WMV)($)",filename.up());
 
     }
+
+    private Song getSong (Info info, string filePath, TimeVal modificationTime) {
+
+        Song song;
+        string[] DEFAULT_STRINGS = new string[0];
+        uint8[] DEFAULT_US = new uint8[0];
+
+        song = new Song();
+        song.artist=info.artist ?? "";        
+        song.albumartist=info.albumartist ?? "";
+        song.album=info.album ?? "";
+        song.title=info.title ?? "";
+        song.genre=info.genre ?? "";
+        song.comment=info.comment ?? "";
+        song.disk_string=info.disk_string ?? "";
+        song.is_compilation = info.is_compilation ;
+        song.bitrate = info.bitrate ;
+        song.channels = info.channels ;
+        song.length = info.length  ;
+        song.samplerate = info.samplerate ;
+        song.tracknumber = info.tracknumber;
+        song.year = info.year ;
+
+        song.filePath = filePath;
+        song.modificationTime = modificationTime;
+
+        stdout.printf(@"New song created : $song \n");
+
+        return song; 
+
+    }
+
 }
