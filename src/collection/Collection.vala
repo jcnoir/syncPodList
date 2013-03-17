@@ -34,7 +34,7 @@ public class MusicCollection : GLib.Object {
             FileInfo file_info;
             while ((file_info = enumerator.next_file ()) != null) {
                 if (file_info.get_file_type() != FileType.DIRECTORY) {
-                    stdout.printf("nFile : %s \n", file_info.get_name());
+                    stdout.printf("File : %s \n", file_info.get_name());
                     if (isCompatibleExtension( file_info.get_name() )) {
                         displaySongTags( directory.get_child(file_info.get_name()).get_path() );
                     }
