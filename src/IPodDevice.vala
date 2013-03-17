@@ -11,11 +11,11 @@ public class IPodDevice : GLib.Object {
         unowned GLib.List<GPod.Playlist> playlists;
 
         ipodMountpoint = Environment.get_variable("IPOD_MOUNTPOINT");        
-        stdout.printf ("Ipod path (from the IPOD_MOUNTPOINT environment variable) : %s\n", ipodMountpoint);
+        stdout.printf (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountpoint \n" );
         try {
             db = GPod.iTunesDB.parse(ipodMountpoint);
             plistNb = db.playlists_number();
-            stdout.printf ("Playlist number : %u\n", plistNb);
+            stdout.printf (@"Playlist number : $plistNb \n");
             playlists = db.playlists;
             playlists.foreach ((playlist) => {
 
