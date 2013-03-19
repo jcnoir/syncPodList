@@ -6,6 +6,12 @@ public class MusicCollection : GLib.Object {
 
     private Timer timer = new Timer();
 
+    private Dao dao;
+
+
+    public MusicCollection() {
+        this.dao = new Dao();
+    }
 
     static int main (string[] args) {
 
@@ -102,7 +108,6 @@ public class MusicCollection : GLib.Object {
         song.genre=info.genre ?? "";
         song.comment=info.comment ?? "";
         song.disk_string=info.disk_string ?? "";
-        song.is_compilation = info.is_compilation ;
         song.bitrate = info.bitrate ;
         song.channels = info.channels ;
         song.length = info.length  ;
@@ -114,7 +119,7 @@ public class MusicCollection : GLib.Object {
         song.modificationTime = modificationTime;
 
         stdout.printf(@"New song created : $song \n");
-
+        this.dao.createSong(song);
         return song; 
 
     }
