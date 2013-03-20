@@ -4,3 +4,4 @@ _build_/
 build/
 *.o
 *.bz2
+syncpodlist.db

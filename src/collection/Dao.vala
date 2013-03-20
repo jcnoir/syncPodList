@@ -13,7 +13,6 @@ public class Dao : GLib.Object {
 
             this.createDb();
 
-            createSongQuery = db.prepare ("INSERT INTO `song` (`modificationTime`, `bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`) VALUES (:modificationTime, :bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title);");
         }
         catch (SQLHeavy.Error e) {
             GLib.error ("Query creation failure: %s", e.message);
@@ -36,6 +35,8 @@ public class Dao : GLib.Object {
             stdout.printf("Creating song in db ... \n");
 
             SQLHeavy.Transaction trans = db.begin_transaction ();
+
+            createSongQuery = trans.prepare ("INSERT INTO `song` (`modificationTime`, `bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`) VALUES (:modificationTime, :bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title);");
 
             // Bind an int
             createSongQuery.set_double (":modificationTime", song.modificationTime.tv_sec);
