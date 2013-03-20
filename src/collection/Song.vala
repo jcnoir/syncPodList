@@ -20,7 +20,7 @@ public class Song :  GLib.Object {
     public string filePath {get;set;}
     public string genre {get; set;}
     public string title {get; set;}
-    
+
     public string getFormattedTime() {
         return  new DateTime.from_timeval_local(modificationTime).format("%d-%m-%Y %H:%M:%S");
     }
