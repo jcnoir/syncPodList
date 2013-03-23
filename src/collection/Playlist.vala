@@ -1,18 +1,17 @@
 using Gee;
-
 public class PlayList : GLib.Object {
 
     public ArrayList<Song> songs {get; set;}
     public string relativeRoot {get; set;}
     public string playlistPath {get; set;}
-    
+
     public PlayList(string playlistPath) {
         PlayList.Relative(playlistPath, "");
     }
 
     public PlayList.Relative(string playlistPath, string relativeRoot) {
         this.playlistPath = playlistPath;
-        this.relativeRoot = relativeRoot +"/";
+        this.relativeRoot = relativeRoot;
 
         message("Playlist created from file : %s, relative entry root : %s ", this.playlistPath,this.relativeRoot );
     }
@@ -67,4 +66,41 @@ public class PlayList : GLib.Object {
     private bool isValidLine(string line) {
         return !GLib.Regex.match_simple("(^)(.*)(#)(.*)($)", line);
     }
+
+    public void  write() {
+        try {
+
+            // Reference a local file name
+            var file = File.new_for_path (playlistPath);
+
+            {
+                // delete if file already exists
+                if (file.query_exists ()) {
+                    message("Target playlist file already exists, replacing it ...");
+                    file.delete ();
+                }
+                // Create a new file with this name
+                var file_stream = file.create(FileCreateFlags.REPLACE_DESTINATION);
+
+                // Test for the existence of file
+                if (file.query_exists ()) {
+                    message ("File successfully created.");
+                }
+
+                // Write text data to file
+                var data_stream = new DataOutputStream (file_stream);
+
+                foreach (Song song in songs) {
+                    var text = song.filePath.replace(this.relativeRoot,"");
+                    data_stream.put_string (text +"\n");
+
+                }
+            } // Streams closed at this point
+
+        } catch (Error e) {
+            warning  ("Error: %s", e.message);
+        }
+
+    }
+
 }

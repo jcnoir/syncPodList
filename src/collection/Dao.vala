@@ -137,12 +137,12 @@ public class Dao : GLib.Object {
 
     public ArrayList<Song> getMatchingSong(ArrayList<Song> songs, int64 collectionId) {
         QueryResult results;
-        var matchingSongs = new ArrayList<Song>();
+        ArrayList<Song> matchingSongs = new ArrayList<Song>();
         foreach (Song song in songs) {
             try {
                 string filePath;
 
-                message("Looking for matching song in collection %s for title %s", collectionId.to_string(), song.title);
+                message("Looking for matching song in collection '%s' for title '%s'", collectionId.to_string(), song.title);
 
                 SQLHeavy.Query query = db.prepare ("Select `file_path` FROM `song` WHERE `song_collection` = :collectionId AND `length` = :length AND `title` = :title AND `artist` = :artist AND `album` = :album ;");
                 query.set_int64(":collectionId",collectionId);
