@@ -71,7 +71,7 @@ public class MusicCollection : GLib.Object {
 
         public static Song getSong (string filePath) {
 
-            Song song;
+            Song song = null;
             TagInfo.Info info;
 
                 info = TagInfo.Info.factory_make(filePath);
@@ -96,7 +96,7 @@ public class MusicCollection : GLib.Object {
                     message(@"Song metadata : $song");
                 }
                 else {
-                    error("Parsing failure !");
+                    warning("Parsing failure !");
                 }
 
 
