@@ -15,9 +15,6 @@ public class Main : GLib.Object {
         return 1;
     }
 
-
-
-
     public static void scanCollection(string collectionPath) {
         MusicCollection collection;
         Dao dao = new Dao();
