@@ -5,7 +5,6 @@ public class Song :  GLib.Object {
     public Song () {
     }
 
-    public TimeVal modificationTime{get;set;}
     public int bitrate {get; set;}
     public int channels {get; set;}
     public int length {get; set;}
@@ -21,12 +20,49 @@ public class Song :  GLib.Object {
     public string genre {get; set;}
     public string title {get; set;}
 
-    public string getFormattedTime() {
-        return  new DateTime.from_timeval_local(modificationTime).format("%d-%m-%Y %H:%M:%S");
-    }
-
     public string to_string() {
-        return artist + "-" + album + "-" + tracknumber.to_string() + "-" +title +
-            "-" + getFormattedTime();
+        var sb = new StringBuilder();
+        sb.append("album=");
+        sb.append(album);
+        sb.append(", ");
+        sb.append("artist=");
+        sb.append(artist);
+        sb.append(", ");
+        sb.append("albumartist=");
+        sb.append(albumartist);
+        sb.append(", ");
+        sb.append("bitrate=");
+        sb.append(bitrate.to_string());
+        sb.append(", ");
+        sb.append("channels=");
+        sb.append(channels.to_string());
+        sb.append(", ");
+        sb.append("comment=");
+        sb.append(comment);
+        sb.append(", ");
+        sb.append("disk_string=");
+        sb.append(disk_string);
+        sb.append(", ");
+        sb.append("filePath=");
+        sb.append(filePath);
+        sb.append(", ");
+        sb.append("genre=");
+        sb.append(genre);
+        sb.append(", ");
+        sb.append("length=");
+        sb.append(length.to_string());
+        sb.append(", ");
+        sb.append("samplerate=");
+        sb.append(samplerate.to_string());
+        sb.append(", ");
+        sb.append("title=");
+        sb.append(title);
+        sb.append(", ");
+        sb.append("tracknumber=");
+        sb.append(tracknumber.to_string());
+        sb.append(", ");
+        sb.append("year=");
+        sb.append(year.to_string());
+        return sb.str;
     }
 }
