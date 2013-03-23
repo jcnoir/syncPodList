@@ -15,6 +15,7 @@ public class Dao : GLib.Object {
             bool dbExist;
             dbExist = FileUtils.test(databaseName, FileTest.IS_REGULAR);
             this.db = new SQLHeavy.Database (databaseName);
+              db.execute("PRAGMA foreign_keys = ON;");
             if (!dbExist) {
                 message(@"Database not found : $databaseName, creating it ...");
                 this.createDb();
@@ -28,9 +29,7 @@ public class Dao : GLib.Object {
     public void createDb() {
         try {
             SQLHeavy.Transaction trans = db.begin_transaction ();
-            trans.execute ("CREATE TABLE `song` (`id` INTEGER PRIMARY KEY, `bitrate` INTEGER, `channels` INTEGER, `length` INTEGER, `samplerate` INTEGER, `tracknumber` INTEGER, `year` INTEGER, `album` TEXT, `albumartist` TEXT, `artist` TEXT, `comment` TEXT, `disk_string` TEXT, `file_path` TEXT, `genre` TEXT, `title` TEXT, UNIQUE (`file_path`));");
-
-            trans.execute ("CREATE TABLE `collection` (`id` INTEGER PRIMARY KEY, `path` TEXT, `lastupate` INTEGER, UNIQUE(`path`));");
+            trans.run_script("/donnees/dev/syncPodList/src/collection/sql/create.sql");
 
             trans.commit ();
         } catch ( SQLHeavy.Error e ) {
@@ -38,48 +37,13 @@ public class Dao : GLib.Object {
         }
     }
 
-    public void createSong(Song song) {
+    public void createSongs( ArrayList<Song> songs, int64 collectionId) {
         try {
 
-            message("Creating song in db ...");
-
+            message("Updating songs in db with collecion ID : %s", collectionId.to_string());
             SQLHeavy.Transaction trans = db.begin_transaction ();
 
-            createSongQuery = trans.prepare ("INSERT OR REPLACE INTO `song` (`bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`) VALUES (:bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title);");
-
-            // Bind an int
-            createSongQuery.set_int (":bitrate", song.bitrate);
-            createSongQuery.set_int (":channels", song.channels);
-            createSongQuery.set_int (":length", song.length);
-            createSongQuery.set_int (":samplerate", song.samplerate);
-            createSongQuery.set_int (":tracknumber", song.tracknumber);
-            createSongQuery.set_int (":year", song.year);
-
-            // Bind a string
-            createSongQuery.set_string (":album", song.album);
-            createSongQuery.set_string (":albumartist", song.albumartist);
-            createSongQuery.set_string (":artist", song.artist);
-            createSongQuery.set_string (":comment", song.comment);
-            createSongQuery.set_string (":disk_string", song.disk_string);
-            createSongQuery.set_string (":file_path", song.filePath);
-            createSongQuery.set_string (":genre", song.genre);
-            createSongQuery.set_string (":title", song.title);
-
-            createSongQuery.execute_insert();
-
-            trans.commit ();
-        } catch ( SQLHeavy.Error e ) {
-            GLib.error ("Song creation failure: %s", e.message);
-        }
-    }
-
-    public void createSongs( ArrayList<Song> songs) {
-        try {
-
-            message("Updating songs in db ...");
-            SQLHeavy.Transaction trans = db.begin_transaction ();
-
-            createSongQuery = trans.prepare ("INSERT OR REPLACE INTO `song` (`bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`) VALUES (:bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title);");
+            createSongQuery = trans.prepare ("INSERT OR REPLACE INTO `song` ( `bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`, `song_collection` ) VALUES ( :bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title, :collectionId ) ;");
 
             foreach (Song song in songs) {
                 // Bind an int
@@ -89,6 +53,7 @@ public class Dao : GLib.Object {
                 createSongQuery.set_int (":samplerate", song.samplerate);
                 createSongQuery.set_int (":tracknumber", song.tracknumber);
                 createSongQuery.set_int (":year", song.year);
+                createSongQuery.set_int64(":collectionId", collectionId);
 
                 // Bind a string
                 createSongQuery.set_string (":album", song.album);
@@ -99,7 +64,6 @@ public class Dao : GLib.Object {
                 createSongQuery.set_string (":file_path", song.filePath);
                 createSongQuery.set_string (":genre", song.genre);
                 createSongQuery.set_string (":title", song.title);
-
                 createSongQuery.execute_insert();
             }
 
@@ -109,31 +73,67 @@ public class Dao : GLib.Object {
         }
     }
 
-    public long findLastUpdateTime(string path) {
-        long lastUpdateTime;
-        SQLHeavy.Query query = db.prepare ("SELECT `lastupate` FROM `collection` WHERE `path` = :path;");
+    public MusicCollection findCollection(string path) {
+        QueryResult results;
+        MusicCollection collection = new MusicCollection(path);
+        try {
+        SQLHeavy.Query query = db.prepare ("SELECT collection_id, lastupdate, version FROM `collection` WHERE `path` = :path;");
         query.set_string(":path",path);
-        lastUpdateTime = query.execute().fetch_int(0);
-        message("Collection last update time : %s", Utils.formatDate(lastUpdateTime));
-        return lastUpdateTime;
-    }
+        results = query.execute();
 
-    public void updateLastUpdateTime(long lastupate, string path) {
-        message("Updated collection last update time : %s", Utils.formatDate(lastupate));
-        SQLHeavy.Query query = db.prepare ("INSERT OR REPLACE INTO `collection` (`lastupate`, `path`) VALUES (:lastupate, :path);");
-        query.set_string(":path",path);
-        query.set_double(":lastupate",lastupate);
-        query.execute();
-    }
 
-    public MusicCollection findCollection(string rootPath) {
-        MusicCollection collection;
-        long lastUpdateTime;
+        if (!results.finished ) {
+            message("Collection found in db");
+            collection.id = results.fetch_int(0) ;
+            collection.lastUpdateTime = results.fetch_int(1);
+            collection.version = results.fetch_int(2);
+            collection.rootPath = path;
+        }
+        else {
+            message("Collection missing in db, building it ...");
+            this.createCollection(collection);
+        }
+        message (@"Collection : $collection");
 
-        collection = new MusicCollection(rootPath);
-        lastUpdateTime = findLastUpdateTime(rootPath);
-        collection.lastUpdateTime = lastUpdateTime;
-
+        }
+        catch (SQLHeavy.Error e) {
+            error("Find collection request failure : %s", e.message);
+        }
         return collection;
+    }
+
+    public void createCollection(MusicCollection  collection) {
+        try {
+            int64 collectionId;
+            SQLHeavy.Query insertQuery = db.prepare("INSERT INTO collection (`path`,`lastupdate`,`version`) VALUES (:path, :lastupdate, :version) ;");
+            SQLHeavy.Query selectQuery = db.prepare("SELECT `collection_id` FROM `collection` WHERE `path` = :path ;");
+            
+            insertQuery.set_string(":path", collection.rootPath);
+            insertQuery.set_int64(":lastupdate", collection.lastUpdateTime);
+            insertQuery.set_int(":version", collection.version);
+            insertQuery.execute();
+
+            selectQuery.set_string(":path", collection.rootPath);
+            collectionId = selectQuery.execute().fetch_int64(0);
+            collection.id = collectionId;
+            
+            message("New ID for the collection : %s", collectionId.to_string());
+
+        }
+        catch (SQLHeavy.Error e) {
+            error("Collection creation failure : %s", e.message);
+        }
+    }
+    public void updateCollection(MusicCollection  collection) {
+        try {
+            int64 collectionId;
+            SQLHeavy.Query insertQuery = db.prepare("UPDATE `collection` SET `lastupdate` = :lastupdate ;");
+            
+            insertQuery.set_int64(":lastupdate", collection.lastUpdateTime);
+            insertQuery.execute();
+        }
+        catch (SQLHeavy.Error e) {
+            error("Collection update failure : %s", e.message);
+        }
     }
 }

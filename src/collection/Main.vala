@@ -16,8 +16,8 @@ public class Main : GLib.Object {
         message("Music collection is starting");
         collection = dao.findCollection(collectionPath); 
         collection.update();
-        dao.createSongs(collection.updatedSongs);
-        dao.updateLastUpdateTime(Utils.now(),collectionPath);
+        dao.createSongs(collection.updatedSongs, collection.id);
+        dao.updateCollection(collection);
         return 0;
     }
 }

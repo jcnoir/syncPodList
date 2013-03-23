@@ -3,11 +3,13 @@ using Gee;
 
 public class MusicCollection : GLib.Object {
 
-    private int processedSongCounter = 0 ;
-    private string rootPath;
+    public string rootPath {get;set;}
     public ArrayList<Song> songs {get; set;}
     public ArrayList<Song> updatedSongs {get; set;}
-    public long lastUpdateTime {get; set;}
+    public int64 lastUpdateTime {get; set;}
+    public int64 id {get; set;}
+    public int version = 1;
+
 
     public MusicCollection(string rootPath) {
         this.rootPath = rootPath;
@@ -19,14 +21,12 @@ public class MusicCollection : GLib.Object {
         this.listFiles(this.rootPath);
         message("Total songs found : %u", this.songs.size);
         message("New/Updated songs found : %u", this.updatedSongs.size);
+        this.lastUpdateTime = Utils.now();
     }
 
     public void listFiles(string rootFolderPath) {
 
         try {
-            long modificationTime;
-            message(@"Folder : $rootFolderPath");
-
             var directory = File.new_for_path (rootFolderPath);
             var enumerator = directory.enumerate_children ("*", 0);
 
@@ -34,7 +34,6 @@ public class MusicCollection : GLib.Object {
             while ((file_info = enumerator.next_file ()) != null) {
                 if (file_info.get_file_type() == FileType.REGULAR ) {
                     if (isCompatibleExtension( file_info.get_name() )) {
-                        message("File : %s" , file_info.get_name());
                         processSong( directory.get_child(file_info.get_name()).get_path() );
                     }}
                 else if (file_info.get_file_type() == FileType.DIRECTORY) {
@@ -104,6 +103,14 @@ public class MusicCollection : GLib.Object {
 
     }
     public string getFormattedLastUpdateTime() {
-        return Utils.formatDate(lastUpdateTime);
+        return Utils.formatDate(this.lastUpdateTime);
+    }
+    public string to_string() {
+        var sb = new StringBuilder();
+        sb.append("id=" +id.to_string() + ", ");
+        sb.append("lastUpdateTime=" +Utils.formatDate(lastUpdateTime) + ", ");
+        sb.append("rootPath=" +rootPath + ", ");
+        sb.append("version=" +version.to_string() + ", ");
+        return sb.str;
     }
 }
