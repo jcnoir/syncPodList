@@ -126,9 +126,7 @@ public class Dao : GLib.Object {
     }
     public void updateCollection(MusicCollection  collection) {
         try {
-            int64 collectionId;
             SQLHeavy.Query insertQuery = db.prepare("UPDATE `collection` SET `lastupdate` = :lastupdate ;");
-            
             insertQuery.set_int64(":lastupdate", collection.lastUpdateTime);
             insertQuery.execute();
         }

@@ -48,69 +48,70 @@ public class MusicCollection : GLib.Object {
 
     private void processSong(string filename) {
 
-        Info info;
         Song song;
         long modificationTime;
 
         try {
-            info = TagInfo.Info.factory_make(filename);
-            if ( info.read() ) {
-                song = this.getSong(info,filename);
-                modificationTime = File.new_for_path(filename).query_info("*", FileQueryInfoFlags.NONE).get_modification_time().tv_sec;
+            song = MusicCollection.getSong(filename);
+            modificationTime = File.new_for_path(filename).query_info("*", FileQueryInfoFlags.NONE).get_modification_time().tv_sec;
 
-                this.songs.add(song);
-                if (modificationTime > this.lastUpdateTime) {
-                    message("Updated song detected ! ");
-                    this.updatedSongs.add(song);
+            this.songs.add(song);
+            if (modificationTime > this.lastUpdateTime) {
+                message("Updated song detected ! ");
+                this.updatedSongs.add(song);
+            }}
+            catch (Error e) {
+                warning("Song process failure for %s : %s" , filename, e.message);
+            }
+        }
+        public static bool isCompatibleExtension (string filename) {
+
+            return GLib.Regex.match_simple("(^)(.*)(AAC|AIF|APE|ASF|FLAC|M4A|M4B|M4P|MP3|MP4|MPC|OGA|OGG|TTA|WAV|WMA|WV|SPEEX|WMV)($)",filename.up());
+        }
+
+        public static Song getSong (string filePath) {
+
+            Song song;
+            TagInfo.Info info;
+
+                info = TagInfo.Info.factory_make(filePath);
+
+                if ( info.read() ) {
+
+                    song = new Song();
+                    song.artist=info.artist ?? "";        
+                    song.albumartist=info.albumartist ?? "";
+                    song.album=info.album ?? "";
+                    song.title=info.title ?? "";
+                    song.genre=info.genre ?? "";
+                    song.comment=info.comment ?? "";
+                    song.disk_string=info.disk_string ?? "";
+                    song.bitrate = info.bitrate ;
+                    song.channels = info.channels ;
+                    song.length = info.length  ;
+                    song.samplerate = info.samplerate ;
+                    song.tracknumber = info.tracknumber;
+                    song.year = info.year ;
+                    song.filePath = filePath;
+                    message(@"Song metadata : $song");
                 }
-            }
-            else {
-                error("Parsing failure !");
-            }
+                else {
+                    error("Parsing failure !");
+                }
+
+
+            return song; 
+
         }
-        catch (Error e) {
-            error("Cannot read the tag infos : %s", e.message);
+        public string getFormattedLastUpdateTime() {
+            return Utils.formatDate(this.lastUpdateTime);
+        }
+        public string to_string() {
+            var sb = new StringBuilder();
+            sb.append("id=" +id.to_string() + ", ");
+            sb.append("lastUpdateTime=" +Utils.formatDate(lastUpdateTime) + ", ");
+            sb.append("rootPath=" +rootPath + ", ");
+            sb.append("version=" +version.to_string() + ", ");
+            return sb.str;
         }
     }
-
-    public static bool isCompatibleExtension (string filename) {
-
-        return GLib.Regex.match_simple("(^)(.*)(AAC|AIF|APE|ASF|FLAC|M4A|M4B|M4P|MP3|MP4|MPC|OGA|OGG|TTA|WAV|WMA|WV|SPEEX|WMV)($)",filename.up());
-    }
-
-    private Song getSong (Info info, string filePath) {
-
-        Song song;
-
-        song = new Song();
-        song.artist=info.artist ?? "";        
-        song.albumartist=info.albumartist ?? "";
-        song.album=info.album ?? "";
-        song.title=info.title ?? "";
-        song.genre=info.genre ?? "";
-        song.comment=info.comment ?? "";
-        song.disk_string=info.disk_string ?? "";
-        song.bitrate = info.bitrate ;
-        song.channels = info.channels ;
-        song.length = info.length  ;
-        song.samplerate = info.samplerate ;
-        song.tracknumber = info.tracknumber;
-        song.year = info.year ;
-        song.filePath = filePath;
-
-        message(@"Song metadata : $song");
-        return song; 
-
-    }
-    public string getFormattedLastUpdateTime() {
-        return Utils.formatDate(this.lastUpdateTime);
-    }
-    public string to_string() {
-        var sb = new StringBuilder();
-        sb.append("id=" +id.to_string() + ", ");
-        sb.append("lastUpdateTime=" +Utils.formatDate(lastUpdateTime) + ", ");
-        sb.append("rootPath=" +rootPath + ", ");
-        sb.append("version=" +version.to_string() + ", ");
-        return sb.str;
-    }
-}
