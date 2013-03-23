@@ -15,7 +15,7 @@ public class Dao : GLib.Object {
             bool dbExist;
             dbExist = FileUtils.test(databaseName, FileTest.IS_REGULAR);
             this.db = new SQLHeavy.Database (databaseName);
-              db.execute("PRAGMA foreign_keys = ON;");
+            db.execute("PRAGMA foreign_keys = ON;");
             if (!dbExist) {
                 message(@"Database not found : $databaseName, creating it ...");
                 this.createDb();
@@ -77,23 +77,23 @@ public class Dao : GLib.Object {
         QueryResult results;
         MusicCollection collection = new MusicCollection(path);
         try {
-        SQLHeavy.Query query = db.prepare ("SELECT collection_id, lastupdate, version FROM `collection` WHERE `path` = :path;");
-        query.set_string(":path",path);
-        results = query.execute();
+            SQLHeavy.Query query = db.prepare ("SELECT collection_id, lastupdate, version FROM `collection` WHERE `path` = :path;");
+            query.set_string(":path",path);
+            results = query.execute();
 
 
-        if (!results.finished ) {
-            message("Collection found in db");
-            collection.id = results.fetch_int(0) ;
-            collection.lastUpdateTime = results.fetch_int(1);
-            collection.version = results.fetch_int(2);
-            collection.rootPath = path;
-        }
-        else {
-            message("Collection missing in db, building it ...");
-            this.createCollection(collection);
-        }
-        message (@"Collection : $collection");
+            if (!results.finished ) {
+                message("Collection found in db");
+                collection.id = results.fetch_int(0) ;
+                collection.lastUpdateTime = results.fetch_int(1);
+                collection.version = results.fetch_int(2);
+                collection.rootPath = path;
+            }
+            else {
+                message("Collection missing in db, building it ...");
+                this.createCollection(collection);
+            }
+            message (@"Collection : $collection");
 
         }
         catch (SQLHeavy.Error e) {
@@ -107,7 +107,7 @@ public class Dao : GLib.Object {
             int64 collectionId;
             SQLHeavy.Query insertQuery = db.prepare("INSERT INTO collection (`path`,`lastupdate`,`version`) VALUES (:path, :lastupdate, :version) ;");
             SQLHeavy.Query selectQuery = db.prepare("SELECT `collection_id` FROM `collection` WHERE `path` = :path ;");
-            
+
             insertQuery.set_string(":path", collection.rootPath);
             insertQuery.set_int64(":lastupdate", collection.lastUpdateTime);
             insertQuery.set_int(":version", collection.version);
@@ -116,7 +116,7 @@ public class Dao : GLib.Object {
             selectQuery.set_string(":path", collection.rootPath);
             collectionId = selectQuery.execute().fetch_int64(0);
             collection.id = collectionId;
-            
+
             message("New ID for the collection : %s", collectionId.to_string());
 
         }
@@ -133,5 +133,38 @@ public class Dao : GLib.Object {
         catch (SQLHeavy.Error e) {
             error("Collection update failure : %s", e.message);
         }
+    }
+
+    public ArrayList<Song> getMatchingSong(ArrayList<Song> songs, int64 collectionId) {
+        QueryResult results;
+        var matchingSongs = new ArrayList<Song>();
+        foreach (Song song in songs) {
+            try {
+                string filePath;
+
+                message("Looking for matching song in collection %s for title %s", collectionId.to_string(), song.title);
+
+                SQLHeavy.Query query = db.prepare ("Select `file_path` FROM `song` WHERE `song_collection` = :collectionId AND `length` = :length AND `title` = :title AND `artist` = :artist AND `album` = :album ;");
+                query.set_int64(":collectionId",collectionId);
+                query.set_int(":length",song.length);
+                query.set_string(":title",song.title);
+                query.set_string(":artist",song.artist);
+                query.set_string(":album",song.album);
+                results = query.execute();
+
+                if (!results.finished) {
+                    filePath = results.fetch_string(0);
+                    message("Matching song found : %s", filePath);
+                    matchingSongs.add(MusicCollection.getSong(filePath));
+                }
+                else {
+                    message("No matching song found");
+                }
+            }
+            catch (SQLHeavy.Error e) {
+                warning("Matching song find failure : %s", e.message);
+            }
+        }
+        return matchingSongs;
     }
 }
