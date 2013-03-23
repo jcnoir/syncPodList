@@ -4,7 +4,6 @@
 # Thomas Nagy, 2010
 
 def build(bld):
-    print('sub-build ...')
     bld(
             features      = 'c cprogram',
             #vapi_dirs     = '../vapi',
