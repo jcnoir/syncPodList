@@ -11,11 +11,11 @@ public class IPodDevice : GLib.Object {
         unowned GLib.List<GPod.Playlist> playlists;
 
         ipodMountpoint = Environment.get_variable("IPOD_MOUNTPOINT");        
-        stdout.printf (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountpoint \n" );
+        message (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountpoint \n" );
         try {
             db = GPod.iTunesDB.parse(ipodMountpoint);
             plistNb = db.playlists_number();
-            stdout.printf (@"Playlist number : $plistNb \n");
+            message (@"Playlist number : $plistNb \n");
             playlists = db.playlists;
             playlists.foreach ((playlist) => {
 
@@ -24,24 +24,21 @@ public class IPodDevice : GLib.Object {
 
                                playlist.spl_update();
 
-                               stdout.printf ("Playlist %s (%u)\n", playlist.name,playlist.num);
+                               message ("Playlist %s (%u)\n", playlist.name,playlist.num);
 
                                if (playlist.is_spl) {
-                               stdout.printf("==> Smart Playlist detected\n");
+                               message("==> Smart Playlist detected\n");
                                string matchingPlaylistName;
                                matchingPlaylistName = playlist.name.replace(IPodDevice.REPLACE_PATTERN,"");
                                matchingPlaylist = db.playlist_by_name(matchingPlaylistName) ;
                                if ( matchingPlaylist != null ) {
-                               stdout.printf("Matching normal playlist found %s\n", matchingPlaylist.name);
+                               message("Matching normal playlist found %s\n", matchingPlaylist.name);
                                IPodDevice.cleanPlaylist(matchingPlaylist);
                                IPodDevice.copyPlayList(playlist,matchingPlaylist);
-
                                }
-
                                }
-
-            });
-            stdout.printf("Writing ipod database ...\n");
+                               });
+            message("Writing ipod database ...\n");
             db.write();
 
         }catch (Error e) {
@@ -55,14 +52,13 @@ public class IPodDevice : GLib.Object {
     static void cleanPlaylist(GPod.Playlist playlist) {
         unowned GLib.List<unowned GPod.Track> plSongs;
 
-        stdout.printf("Cleaning playlist  : %s\n", playlist.name);
+        message("Cleaning playlist  : %s\n", playlist.name);
 
         plSongs = playlist.members;
         plSongs.foreach ((song) => {
-                         stdout.printf("\t - Removing track : %s \n", song.title);
+                         message("\t - Removing track : %s \n", song.title);
                          playlist.remove_track(song);
                          });
-
     }
 
     static void copyPlayList(GPod.Playlist sourcePlaylist, GPod.Playlist
@@ -70,19 +66,14 @@ public class IPodDevice : GLib.Object {
 
         unowned GLib.List<unowned GPod.Track> plSongs;
 
-        stdout.printf("Copying playlist : %s ==> %s \n", sourcePlaylist.name, targetPlaylist.name);
+        message("Copying playlist : %s ==> %s \n", sourcePlaylist.name, targetPlaylist.name);
         plSongs = sourcePlaylist.members;
         plSongs.foreach ((song) => {
 
-                         stdout.printf("\t + Copying track %s-%s-%s\n", song.artist, song.album, song.title);
+                         message("\t + Copying track %s-%s-%s\n", song.artist, song.album, song.title);
                          //-1 to add the song at the end of the playlist
                          targetPlaylist.add_track(song,-1);
                          });
 
     }
-
-
-
-
-
 }

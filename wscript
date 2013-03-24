@@ -23,4 +23,4 @@ def configure(conf):
 
 def build(bld):
     bld.recurse ('src/collection')
-    #bld.recurse ('src/ipod')
+    bld.recurse ('src/ipod')
