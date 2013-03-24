@@ -11,6 +11,8 @@ out = 'build'
 def options(opt):
     opt.load('compiler_cc')
     opt.load('vala')
+    # Add a command line option to compile with debug infos : --debug=True
+    opt.add_option('--debug', action='store', default=False, help='Add debug informations during compilation')
 
 def configure(conf):
     conf.load('compiler_cc vala')
@@ -25,10 +27,12 @@ def configure(conf):
     
 
 def build(bld):
-
-    #Debug Mode
-    bld.env.VALAFLAGS.append('--debug')
-    bld.env.CFLAGS = ['-g', '-Wall']
+    
+    if bld.options.debug:
+        print("Compilation debug enabled.")
+        #Debug Mode
+        bld.env.VALAFLAGS.append('--debug')
+        bld.env.CFLAGS = ['-g', '-Wall']
 
     bld.recurse ('src/collection')
     bld.recurse ('src/ipod')
