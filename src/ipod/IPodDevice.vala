@@ -3,15 +3,28 @@ using GPod;
 public class IPodDevice : GLib.Object {
 
     const string REPLACE_PATTERN = "ZZ_";
+    public string ipodMountpoint {get; set;} 
+
 
     static int main (string[] args) {
-        string ipodMountpoint; 
-        GPod.iTunesDB db;
-        uint plistNb;
+
+        var ipodMountPoint = Environment.get_variable("IPOD_MOUNTPOINT");
+        message (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountPoint " );
+        var ipodDevice = new IPodDevice(ipodMountPoint);
+        ipodDevice.syncPlaylists(); 
+        return 0;
+    }
+
+    public IPodDevice(string ipodMountPoint) {
+        this.ipodMountpoint = ipodMountPoint;
+    }
+
+    public void syncPlaylists() {
+
+        GPod.iTunesDB db; 
+        uint plistNb ;    
         unowned GLib.List<GPod.Playlist> playlists;
 
-        ipodMountpoint = Environment.get_variable("IPOD_MOUNTPOINT");        
-        message (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountpoint " );
         try {
             db = GPod.iTunesDB.parse(ipodMountpoint);
             plistNb = db.playlists_number();
@@ -33,8 +46,8 @@ public class IPodDevice : GLib.Object {
                                matchingPlaylist = db.playlist_by_name(matchingPlaylistName) ;
                                if ( matchingPlaylist != null ) {
                                message("Matching normal playlist found %s", matchingPlaylist.name);
-                               IPodDevice.cleanPlaylist(matchingPlaylist);
-                               IPodDevice.copyPlayList(playlist,matchingPlaylist);
+                               cleanPlaylist(matchingPlaylist);
+                               copyPlayList(playlist,matchingPlaylist);
                                }
                                }
                                });
@@ -42,14 +55,13 @@ public class IPodDevice : GLib.Object {
             db.write();
 
         }catch (Error e) {
-            stderr.printf("Cannot read the ipod database : %s",
-                          e.message);
+            error("Cannot read the ipod database : %s",
+                  e.message);
         }
 
-        return 0;
     }
 
-    static void cleanPlaylist(GPod.Playlist playlist) {
+    public void cleanPlaylist(GPod.Playlist playlist) {
         unowned GLib.List<unowned GPod.Track> plSongs;
 
         message("Cleaning playlist  : %s", playlist.name);
@@ -61,7 +73,7 @@ public class IPodDevice : GLib.Object {
                          });
     }
 
-    static void copyPlayList(GPod.Playlist sourcePlaylist, GPod.Playlist
+    public void copyPlayList(GPod.Playlist sourcePlaylist, GPod.Playlist
                              targetPlaylist) {
 
         unowned GLib.List<unowned GPod.Track> plSongs;
