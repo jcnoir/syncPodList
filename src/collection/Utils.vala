@@ -10,4 +10,5 @@ public class Utils :  GLib.Object {
         timeVal.get_current_time();
         return timeVal.tv_sec;
     }
+
 }

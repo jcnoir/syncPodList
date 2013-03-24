@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# encoding: utf-8
 
 APPNAME = 'sync-pod-list'
 PROG_NAME = 'sync-pod-list'
