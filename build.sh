@@ -1,1 +1,3 @@
-./waf distclean ; ./waf -v configure ; waf -v ;
+./waf distclean
+./waf -v configure
+waf -v
