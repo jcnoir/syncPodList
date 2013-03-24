@@ -1,17 +1,17 @@
+// modules: libgpod-1.0 .
 using GPod;
 
 public class IPodDevice : GLib.Object {
 
-    const string REPLACE_PATTERN = "ZZ_";
-    public string ipodMountpoint {get; set;} 
-
+    const string REPLACE_PATTERN="ZZ_";
+    public string ipodMountpoint {get; set;}
 
     static int main (string[] args) {
 
         var ipodMountPoint = Environment.get_variable("IPOD_MOUNTPOINT");
         message (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountPoint " );
         var ipodDevice = new IPodDevice(ipodMountPoint);
-        ipodDevice.syncPlaylists(); 
+        ipodDevice.syncPlaylists();
         return 0;
     }
 
@@ -21,8 +21,8 @@ public class IPodDevice : GLib.Object {
 
     public void syncPlaylists() {
 
-        GPod.iTunesDB db; 
-        uint plistNb ;    
+        GPod.iTunesDB db;
+        uint plistNb ;
         unowned GLib.List<GPod.Playlist> playlists;
 
         try {
@@ -33,30 +33,30 @@ public class IPodDevice : GLib.Object {
             playlists.foreach ((playlist) => {
 
 
-                               unowned GPod.Playlist matchingPlaylist;
+                    unowned GPod.Playlist matchingPlaylist;
 
-                               playlist.spl_update();
+                    playlist.spl_update();
 
-                               message ("Playlist %s (%u)", playlist.name,playlist.num);
+                    message ("Playlist %s (%u)", playlist.name,playlist.num);
 
-                               if (playlist.is_spl) {
-                               message("==> Smart Playlist detected");
-                               string matchingPlaylistName;
-                               matchingPlaylistName = playlist.name.replace(IPodDevice.REPLACE_PATTERN,"");
-                               matchingPlaylist = db.playlist_by_name(matchingPlaylistName) ;
-                               if ( matchingPlaylist != null ) {
-                               message("Matching normal playlist found %s", matchingPlaylist.name);
-                               cleanPlaylist(matchingPlaylist);
-                               copyPlayList(playlist,matchingPlaylist);
-                               }
-                               }
-                               });
+                    if (playlist.is_spl) {
+                    message("==> Smart Playlist detected");
+                    string matchingPlaylistName;
+                    matchingPlaylistName = playlist.name.replace(IPodDevice.REPLACE_PATTERN,"");
+                    matchingPlaylist = db.playlist_by_name(matchingPlaylistName) ;
+                    if ( matchingPlaylist != null ) {
+                    message("Matching normal playlist found %s", matchingPlaylist.name);
+                    cleanPlaylist(matchingPlaylist);
+                    copyPlayList(playlist,matchingPlaylist);
+                    }
+                    }
+                    });
             message("Writing ipod database ...");
             db.write();
 
         }catch (Error e) {
             error("Cannot read the ipod database : %s",
-                  e.message);
+                    e.message);
         }
 
     }
@@ -68,13 +68,13 @@ public class IPodDevice : GLib.Object {
 
         plSongs = playlist.members;
         plSongs.foreach ((song) => {
-                         message("- Removing track : %s ", song.title);
-                         playlist.remove_track(song);
-                         });
+                message("- Removing track : %s ", song.title);
+                playlist.remove_track(song);
+                });
     }
 
     public void copyPlayList(GPod.Playlist sourcePlaylist, GPod.Playlist
-                             targetPlaylist) {
+            targetPlaylist) {
 
         unowned GLib.List<unowned GPod.Track> plSongs;
 
@@ -82,10 +82,10 @@ public class IPodDevice : GLib.Object {
         plSongs = sourcePlaylist.members;
         plSongs.foreach ((song) => {
 
-                         message("+ Copying track %s-%s-%s", song.artist, song.album, song.title);
-                         //-1 to add the song at the end of the playlist
-                         targetPlaylist.add_track(song,-1);
-                         });
+                message("+ Copying track %s-%s-%s", song.artist, song.album, song.title);
+                //-1 to add the song at the end of the playlist
+                targetPlaylist.add_track(song,-1);
+                });
 
     }
 }

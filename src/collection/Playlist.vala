@@ -1,3 +1,4 @@
+// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using Gee;
 public class PlayList : GLib.Object {
 
@@ -43,7 +44,7 @@ public class PlayList : GLib.Object {
 
                     entryFile = File.new_for_path (relativeRoot + line);
 
-                    if (entryFile.query_exists ()) {                   
+                    if (entryFile.query_exists ()) {
                         var song = MusicCollection.getSong(entryFile.get_path());
                         this.songs.add(song);
                     }

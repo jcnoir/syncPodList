@@ -1,3 +1,4 @@
+// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using SQLHeavy;
 using Gee;
 
@@ -7,7 +8,7 @@ public class Dao : GLib.Object {
 
     private SQLHeavy.Database db;
 
-    private SQLHeavy.Query createSongQuery; 
+    private SQLHeavy.Query createSongQuery;
 
     public Dao() {
         try {

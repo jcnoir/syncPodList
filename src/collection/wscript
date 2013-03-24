@@ -1,22 +1,25 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
+
 def build(build):
     build(
-            features      = 'c cprogram',
-            #vapi_dirs     = '../vapi',
-            includes      = '.',
-            packages      = 'libtaginfo_c gio-2.0 sqlheavy-0.1 gee-1.0',
-            target        = '../../collection',
-            uselib        = 'TAGINFO GIO SQLHEAVY GEE',
-            source = build.path.ant_glob(incl = '*.vala')            
+            features='c cprogram',
+            #vapi_dirs='../vapi',
+            includes='.',
+            packages='libtaginfo_c gio-2.0 sqlheavy-0.1 gee-1.0',
+            target='../../collection',
+            uselib='TAGINFO GIO SQLHEAVY GEE',
+            source=build.path.ant_glob(incl='*.vala')            
             )
 
     build.add_pre_fun(pre)
     build.add_post_fun(post)
 
+
 def pre(build):
     print('before the build is started')
+
 
 def post(build):
     print('after the build is complete')

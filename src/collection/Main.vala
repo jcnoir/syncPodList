@@ -1,3 +1,4 @@
+// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using Gee;
 public class Main : GLib.Object {
 
@@ -26,7 +27,7 @@ public class Main : GLib.Object {
         Dao dao = new Dao();
 
         message("Music collection is starting");
-        collection = dao.findCollection(collectionPath); 
+        collection = dao.findCollection(collectionPath);
         collection.update();
         dao.createSongs(collection.updatedSongs, collection.id);
         dao.updateCollection(collection);
