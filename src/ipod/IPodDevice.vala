@@ -69,6 +69,7 @@ public class IPodDevice : GLib.Object {
         plSongs = playlist.members;
         plSongs.foreach ((song) => {
                 message("- Removing track : %s ", song.title);
+                message("Track path : %s", song.ipod_path);
                 playlist.remove_track(song);
                 });
     }
@@ -83,6 +84,7 @@ public class IPodDevice : GLib.Object {
         plSongs.foreach ((song) => {
 
                 message("+ Copying track %s-%s-%s", song.artist, song.album, song.title);
+                message("Track path : %s", song.ipod_path);
                 //-1 to add the song at the end of the playlist
                 targetPlaylist.add_track(song,-1);
                 });

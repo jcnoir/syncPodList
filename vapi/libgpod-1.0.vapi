@@ -41,7 +41,7 @@ namespace GPod {
 
             [CCode (cname="itdb_get_music_dir")]
                 public static string get_music_dir(string mount_point);
-        }	
+        }
 
     [Compact]
         [CCode (cname="Itdb_IpodInfo", lower_case_cprefix = "itdb_info_")]
