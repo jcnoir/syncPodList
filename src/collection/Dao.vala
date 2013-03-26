@@ -41,10 +41,9 @@ public class Dao : GLib.Object {
     public void createSongs( ArrayList<Song> songs, int64 collectionId) {
         try {
 
-            message("Updating songs in db with collecion ID : %s", collectionId.to_string());
             SQLHeavy.Transaction trans = db.begin_transaction ();
 
-            createSongQuery = trans.prepare ("INSERT OR REPLACE INTO `song` ( `bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`, `song_collection` ) VALUES ( :bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title, :collectionId ) ;");
+            createSongQuery = trans.prepare ("INSERT OR REPLACE INTO `song` ( `bitrate`, `channels`, `length`, `samplerate`, `tracknumber`, `year`, `album`, `albumartist`, `artist`, `comment`, `disk_string`, `file_path`, `genre`, `title`, `song_collection`, `checksum` ) VALUES ( :bitrate, :channels, :length, :samplerate, :tracknumber, :year, :album, :albumartist, :artist, :comment, :disk_string, :file_path, :genre, :title, :collectionId, :checksum ) ;");
 
             foreach (Song song in songs) {
                 // Bind an int
@@ -65,6 +64,8 @@ public class Dao : GLib.Object {
                 createSongQuery.set_string (":file_path", song.filePath);
                 createSongQuery.set_string (":genre", song.genre);
                 createSongQuery.set_string (":title", song.title);
+                createSongQuery.set_string (":checksum", song.checksum);
+
                 createSongQuery.execute_insert();
             }
 
@@ -84,11 +85,10 @@ public class Dao : GLib.Object {
 
 
             if (!results.finished ) {
-                message("Collection found in db");
                 collection.id = results.fetch_int(0) ;
                 collection.lastUpdateTime = results.fetch_int(1);
                 collection.version = results.fetch_int(2);
-                collection.rootPath = path;
+                collection.root_path = path;
             }
             else {
                 message("Collection missing in db, building it ...");
@@ -109,12 +109,12 @@ public class Dao : GLib.Object {
             SQLHeavy.Query insertQuery = db.prepare("INSERT INTO collection (`path`,`lastupdate`,`version`) VALUES (:path, :lastupdate, :version) ;");
             SQLHeavy.Query selectQuery = db.prepare("SELECT `collection_id` FROM `collection` WHERE `path` = :path ;");
 
-            insertQuery.set_string(":path", collection.rootPath);
+            insertQuery.set_string(":path", collection.root_path);
             insertQuery.set_int64(":lastupdate", collection.lastUpdateTime);
             insertQuery.set_int(":version", collection.version);
             insertQuery.execute();
 
-            selectQuery.set_string(":path", collection.rootPath);
+            selectQuery.set_string(":path", collection.root_path);
             collectionId = selectQuery.execute().fetch_int64(0);
             collection.id = collectionId;
 
@@ -167,5 +167,62 @@ public class Dao : GLib.Object {
             }
         }
         return matchingSongs;
+    }
+
+    public void getMissingSongs(int64 sourceCollectionId, int64 targetCollectionId) {
+
+        QueryResult results;
+
+        try {
+            message("Find missing songs between collection ID %s and %s",sourceCollectionId.to_string(), targetCollectionId.to_string());
+            SQLHeavy.Query query = db.prepare("select distinct s1.* from song s1 left outer join song s2 on (s1.artist = s2.artist and s1.title = s2.title and s1.length = s2.length and s1.song_collection = :sourceCollectionId and s2.song_collection = :targetCollectionId ) where s1.song_collection = :sourceCollectionId and s2.song_collection is null ;");
+            query.set_int64(":sourceCollectionId", sourceCollectionId);
+            query.set_int64(":targetCollectionId", targetCollectionId);
+            results = query.execute();
+            extractSongs(results);
+
+
+        }
+        catch (SQLHeavy.Error e) {
+            error("Missing song failure : %s", e.message);
+        }
+
+    }
+
+    private ArrayList<Song> extractSongs(QueryResult results) {
+
+        var songs = new ArrayList<Song>();
+
+        for ( int record = 0 ; !results.finished ; record++, results.next
+                () ) {
+            try {
+                Song song = new Song();
+                song.bitrate = results.fetch_int(1);
+                song.channels = results.fetch_int(2);
+                song.length = results.fetch_int(3);
+                song.samplerate = results.fetch_int(4);
+                song.tracknumber = results.fetch_int(5);
+                song.year = results.fetch_int(6);
+                song.album = results.fetch_string(7);
+                song.albumartist = results.fetch_string(8);
+                song.artist = results.fetch_string(9);
+                song.comment = results.fetch_string(10);
+                song.disk_string = results.fetch_string(11);
+                song.filePath = results.fetch_string(12);
+                song.genre = results.fetch_string(13);
+                song.title = results.fetch_string(14);
+                song.checksum = results.fetch_string(15);
+                songs.add(song);
+                //message("Missing song found : %s", song.to_string());
+
+            }
+            catch (SQLHeavy.Error e) {
+                error("Missing song fetch failure : %s", e.message);
+            }
+
+        }
+        message ("%u mssing songs found", songs.size);
+        return songs;
+
     }
 }

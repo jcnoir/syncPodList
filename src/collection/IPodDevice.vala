@@ -6,7 +6,7 @@ public class IPodDevice : GLib.Object {
     const string REPLACE_PATTERN="ZZ_";
     public string ipodMountpoint {get; set;}
 
-    static int main (string[] args) {
+    static int main2 (string[] args) {
 
         var ipodMountPoint = Environment.get_variable("IPOD_MOUNTPOINT");
         message (@"Ipod path (from the IPOD_MOUNTPOINT environment variable) : $ipodMountPoint " );

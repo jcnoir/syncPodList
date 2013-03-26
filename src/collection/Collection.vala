@@ -4,28 +4,40 @@ using Gee;
 
 public class MusicCollection : GLib.Object {
 
-    public string rootPath {get;set;}
-    public ArrayList<Song> songs {get; set;}
+    public string root_path {get;set;}
     public ArrayList<Song> updatedSongs {get; set;}
     public int64 lastUpdateTime {get; set;}
     public int64 id {get; set;}
     public int version = 1;
+    public bool checksum_enabled {get;set;default = false;}
 
 
-    public MusicCollection(string rootPath) {
-        this.rootPath = rootPath;
-        this.songs = new ArrayList<Song>();
+    public MusicCollection(string root_path) {
+        this.root_path = root_path;
         this.updatedSongs = new ArrayList<Song>();
+        this.checksum_enabled = checksum_enabled;
+    }
+
+    public MusicCollection.CHECKSUM(string root_path) {
+        base(root_path);
+        this.checksum_enabled = true;
     }
 
     public void update() {
-        this.listFiles(this.rootPath);
-        message("Total songs found : %u", this.songs.size);
+        var timer = new Timer();
+        double elpasedSecs;
+
+        this.updatePath(this.root_path);
+        timer.stop ();
+        message("Updating collection : %s", root_path );
+        elpasedSecs  = timer.elapsed ();
+        message("Update duration : %s secs", elpasedSecs.to_string());
         message("New/Updated songs found : %u", this.updatedSongs.size);
         this.lastUpdateTime = Utils.now();
+        message("End of updating collection : %s", root_path );
     }
 
-    public void listFiles(string rootFolderPath) {
+    public void updatePath(string rootFolderPath) {
 
         try {
             var directory = File.new_for_path (rootFolderPath);
@@ -34,11 +46,11 @@ public class MusicCollection : GLib.Object {
             FileInfo file_info;
             while ((file_info = enumerator.next_file ()) != null) {
                 if (file_info.get_file_type() == FileType.REGULAR ) {
-                    if (isCompatibleExtension( file_info.get_name() )) {
+                    if (isCompatibleExtension( file_info.get_name() ) && file_info.get_modification_time().tv_sec > lastUpdateTime) {
                         processSong( directory.get_child(file_info.get_name()).get_path() );
                     }}
                 else if (file_info.get_file_type() == FileType.DIRECTORY) {
-                    this.listFiles(directory.get_child(file_info.get_name()).get_path());
+                    this.updatePath(directory.get_child(file_info.get_name()).get_path());
                 }
             }
 
@@ -50,17 +62,10 @@ public class MusicCollection : GLib.Object {
     private void processSong(string filename) {
 
         Song song;
-        long modificationTime;
-
         try {
-            song = MusicCollection.getSong(filename);
-            modificationTime = File.new_for_path(filename).query_info("*", FileQueryInfoFlags.NONE).get_modification_time().tv_sec;
-
-            this.songs.add(song);
-            if (modificationTime > this.lastUpdateTime) {
-                message("Updated song detected ! ");
-                this.updatedSongs.add(song);
-            }}
+            song = findSong(filename);
+            this.updatedSongs.add(song);
+        }
         catch (Error e) {
             warning("Song process failure for %s : %s" , filename, e.message);
         }
@@ -68,6 +73,18 @@ public class MusicCollection : GLib.Object {
     public static bool isCompatibleExtension (string filename) {
 
         return GLib.Regex.match_simple("(^)(.*)(AAC|AIF|APE|ASF|FLAC|M4A|M4B|M4P|MP3|MP4|MPC|OGA|OGG|TTA|WAV|WMA|WV|SPEEX|WMV)($)",filename.up());
+    }
+
+    public Song findSong (string filePath) {
+
+        var song = getSong(filePath);
+
+        if (this.checksum_enabled) {
+            song.checksum = Utils.computeChecksum(filePath);
+        }
+
+        message(@"Song metadata : $song");
+        return song;
     }
 
     public static Song getSong (string filePath) {
@@ -94,7 +111,7 @@ public class MusicCollection : GLib.Object {
             song.tracknumber = info.tracknumber;
             song.year = info.year ;
             song.filePath = filePath;
-            message(@"Song metadata : $song");
+
         }
         else {
             warning("Parsing failure !");
@@ -111,7 +128,7 @@ public class MusicCollection : GLib.Object {
         var sb = new StringBuilder();
         sb.append("id=" +id.to_string() + ", ");
         sb.append("lastUpdateTime=" +Utils.formatDate(lastUpdateTime) + ", ");
-        sb.append("rootPath=" +rootPath + ", ");
+        sb.append("root_path=" +root_path + ", ");
         sb.append("version=" +version.to_string() + ", ");
         return sb.str;
     }

@@ -20,6 +20,7 @@ public class Song :  GLib.Object {
     public string filePath {get;set;}
     public string genre {get; set;}
     public string title {get; set;}
+    public string checksum {get; set;default = "";}
 
     public string to_string() {
         var sb = new StringBuilder();
@@ -64,6 +65,9 @@ public class Song :  GLib.Object {
         sb.append(", ");
         sb.append("year=");
         sb.append(year.to_string());
+        sb.append(", ");
+        sb.append("checksum=");
+        sb.append(checksum);
         return sb.str;
     }
 }
