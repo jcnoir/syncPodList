@@ -5,3 +5,6 @@ build/
 *.o
 *.bz2
 syncpodlist.db
+*.orig
+*~
+src/resources/music/empty_copie/
