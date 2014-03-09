@@ -1,4 +1,3 @@
-// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using SQLHeavy;
 using Gee;
 
@@ -21,8 +20,7 @@ public class Dao : GLib.Object {
                 message(@"Database not found : $databaseName, creating it ...");
                 this.createDb();
             }
-        }
-        catch (SQLHeavy.Error e) {
+        } catch (SQLHeavy.Error e) {
             GLib.error ("Query creation failure: %s", e.message);
         }
     }
@@ -89,15 +87,13 @@ public class Dao : GLib.Object {
                 collection.lastUpdateTime = results.fetch_int(1);
                 collection.version = results.fetch_int(2);
                 collection.root_path = path;
-            }
-            else {
+            } else {
                 message("Collection missing in db, building it ...");
                 this.createCollection(collection);
             }
             message (@"Collection : $collection");
 
-        }
-        catch (SQLHeavy.Error e) {
+        } catch (SQLHeavy.Error e) {
             error("Find collection request failure : %s", e.message);
         }
         return collection;
@@ -120,8 +116,7 @@ public class Dao : GLib.Object {
 
             message("New ID for the collection : %s", collectionId.to_string());
 
-        }
-        catch (SQLHeavy.Error e) {
+        } catch (SQLHeavy.Error e) {
             error("Collection creation failure : %s", e.message);
         }
     }
@@ -130,8 +125,7 @@ public class Dao : GLib.Object {
             SQLHeavy.Query insertQuery = db.prepare("UPDATE `collection` SET `lastupdate` = :lastupdate ;");
             insertQuery.set_int64(":lastupdate", collection.lastUpdateTime);
             insertQuery.execute();
-        }
-        catch (SQLHeavy.Error e) {
+        } catch (SQLHeavy.Error e) {
             error("Collection update failure : %s", e.message);
         }
     }
@@ -157,12 +151,10 @@ public class Dao : GLib.Object {
                     filePath = results.fetch_string(0);
                     message("Matching song found : %s", filePath);
                     matchingSongs.add(MusicCollection.getSong(filePath));
-                }
-                else {
+                } else {
                     message("No matching song found");
                 }
-            }
-            catch (SQLHeavy.Error e) {
+            } catch (SQLHeavy.Error e) {
                 warning("Matching song find failure : %s", e.message);
             }
         }
@@ -182,8 +174,7 @@ public class Dao : GLib.Object {
             extractSongs(results);
 
 
-        }
-        catch (SQLHeavy.Error e) {
+        } catch (SQLHeavy.Error e) {
             error("Missing song failure : %s", e.message);
         }
 
@@ -215,8 +206,7 @@ public class Dao : GLib.Object {
                 songs.add(song);
                 //message("Missing song found : %s", song.to_string());
 
-            }
-            catch (SQLHeavy.Error e) {
+            } catch (SQLHeavy.Error e) {
                 error("Missing song fetch failure : %s", e.message);
             }
 
@@ -226,3 +216,4 @@ public class Dao : GLib.Object {
 
     }
 }
+

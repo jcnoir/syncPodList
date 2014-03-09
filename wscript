@@ -19,8 +19,8 @@ def configure(conf):
     conf.check_cfg(package='libgpod-1.0', uselib_store='GPOD', atleast_version='0.8.2', args='--cflags --libs')
     conf.check_cfg(package='libtaginfo_c', uselib_store='TAGINFO', atleast_version='0.1.3', args='--cflags --libs')
     conf.check_cfg(package='gio-2.0', uselib_store='GIO', atleast_version='2.34.3', args='--cflags --libs')
-    conf.check_cfg(package='sqlheavy-0.1', uselib_store='SQLHEAVY', atleast_version=' 0.1.1', args='--cflags --libs')
-    conf.check_cfg(package='gee-1.0', uselib_store='GEE',atleast_version='0.6.7', args='--cflags --libs')
+    conf.check_cfg(package='sqlheavy-0.2', uselib_store='SQLHEAVY', atleast_version=' 0.1.1', args='--cflags --libs')
+    conf.check_cfg(package='gee-0.8', uselib_store='GEE',atleast_version='0.6.7', args='--cflags --libs')
 
     conf.define('PACKAGE', APPNAME)
     conf.define('VERSION', VERSION)

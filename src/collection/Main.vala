@@ -1,16 +1,14 @@
-// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using Gee;
 public class Main : GLib.Object {
 
-    static int main (string[] args) {
+    static int main3 (string[] args) {
         string collectionPath;
         Dao dao = new Dao();
         ArrayList<Song> songs;
         //var collectionPath = "/run/media/jcnoir/IPOD160";
         if (args.length > 1) {
             collectionPath = args[1];
-        }
-        else {
+        } else {
             collectionPath = "/media/donnees/dev/syncPodList/src/resources/music/original";
         }
         scanCollection(collectionPath);
@@ -49,3 +47,7 @@ public class Main : GLib.Object {
 
     }
 }
+
+
+
+

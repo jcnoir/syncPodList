@@ -1,10 +1,18 @@
-// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using Gee;
 public class PlayList : GLib.Object {
 
-    public ArrayList<Song> songs {get; set;}
-    public string relativeRoot {get; set;}
-    public string playlistPath {get; set;}
+    public ArrayList<Song> songs {
+        get;
+        set;
+    }
+    public string relativeRoot {
+        get;
+        set;
+    }
+    public string playlistPath {
+        get;
+        set;
+    }
 
     public PlayList(string playlistPath) {
         PlayList.Relative(playlistPath, "");
@@ -47,8 +55,7 @@ public class PlayList : GLib.Object {
                     if (entryFile.query_exists ()) {
                         var song = MusicCollection.getSong(entryFile.get_path());
                         this.songs.add(song);
-                    }
-                    else {
+                    } else {
                         warning("Playlist entry file not found : %s",
                                 entryFile.get_path());
                     }
@@ -103,5 +110,7 @@ public class PlayList : GLib.Object {
         }
 
     }
-
 }
+
+
+

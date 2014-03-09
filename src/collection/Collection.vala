@@ -1,15 +1,30 @@
-// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using TagInfo;
 using Gee;
 
 public class MusicCollection : GLib.Object {
 
-    public string root_path {get;set;}
-    public ArrayList<Song> updatedSongs {get; set;}
-    public int64 lastUpdateTime {get; set;}
-    public int64 id {get; set;}
+    public string root_path {
+        get;
+        set;
+    }
+    public ArrayList<Song> updatedSongs {
+        get;
+        set;
+    }
+    public int64 lastUpdateTime {
+        get;
+        set;
+    }
+    public int64 id {
+        get;
+        set;
+    }
     public int version = 1;
-    public bool checksum_enabled {get;set;default = false;}
+    public bool checksum_enabled {
+        get;
+        set;
+        default = false;
+    }
 
 
     public MusicCollection(string root_path) {
@@ -48,8 +63,8 @@ public class MusicCollection : GLib.Object {
                 if (file_info.get_file_type() == FileType.REGULAR ) {
                     if (isCompatibleExtension( file_info.get_name() ) && file_info.get_modification_time().tv_sec > lastUpdateTime) {
                         processSong( directory.get_child(file_info.get_name()).get_path() );
-                    }}
-                else if (file_info.get_file_type() == FileType.DIRECTORY) {
+                    }
+                } else if (file_info.get_file_type() == FileType.DIRECTORY) {
                     this.updatePath(directory.get_child(file_info.get_name()).get_path());
                 }
             }
@@ -65,8 +80,7 @@ public class MusicCollection : GLib.Object {
         try {
             song = findSong(filename);
             this.updatedSongs.add(song);
-        }
-        catch (Error e) {
+        } catch (Error e) {
             warning("Song process failure for %s : %s" , filename, e.message);
         }
     }
@@ -92,33 +106,31 @@ public class MusicCollection : GLib.Object {
         Song song = null;
         TagInfo.Info info;
 
-        info = TagInfo.Info.factory_make(filePath);
+        info = TagInfo.Info.create(filePath);
 
-        if ( info.read() ) {
+        if ( info.load() ) {
 
             song = new Song();
-            song.artist=info.artist ?? "";        
+            song.artist=info.artist ?? "";
             song.albumartist=info.albumartist ?? "";
             song.album=info.album ?? "";
             song.title=info.title ?? "";
             song.genre=info.genre ?? "";
             song.comment=info.comment ?? "";
-            song.disk_string=info.disk_string ?? "";
             song.bitrate = info.bitrate ;
             song.channels = info.channels ;
             song.length = info.length  ;
             song.samplerate = info.samplerate ;
-            song.tracknumber = info.tracknumber;
+            song.tracknumber = info.track_number;
             song.year = info.year ;
             song.filePath = filePath;
 
-        }
-        else {
+        } else {
             warning("Parsing failure !");
         }
 
 
-        return song; 
+        return song;
 
     }
     public string getFormattedLastUpdateTime() {
@@ -133,3 +145,4 @@ public class MusicCollection : GLib.Object {
         return sb.str;
     }
 }
+

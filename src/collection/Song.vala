@@ -1,4 +1,3 @@
-// modules: gio-2.0 gee-1.0 libtaginfo_c .
 using TagInfo;
 
 public class Song :  GLib.Object {
@@ -6,21 +5,67 @@ public class Song :  GLib.Object {
     public Song () {
     }
 
-    public int bitrate {get; set;}
-    public int channels {get; set;}
-    public int length {get; set;}
-    public int samplerate {get; set;}
-    public int tracknumber {get; set;}
-    public int year {get; set;}
-    public string album {get; set;}
-    public string albumartist {get; set;}
-    public string artist {get; set;}
-    public string comment {get; set;}
-    public string disk_string {get; set;}
-    public string filePath {get;set;}
-    public string genre {get; set;}
-    public string title {get; set;}
-    public string checksum {get; set;default = "";}
+    public int bitrate {
+        get;
+        set;
+    }
+    public int channels {
+        get;
+        set;
+    }
+    public int length {
+        get;
+        set;
+    }
+    public int samplerate {
+        get;
+        set;
+    }
+    public int tracknumber {
+        get;
+        set;
+    }
+    public int year {
+        get;
+        set;
+    }
+    public string album {
+        get;
+        set;
+    }
+    public string albumartist {
+        get;
+        set;
+    }
+    public string artist {
+        get;
+        set;
+    }
+    public string comment {
+        get;
+        set;
+    }
+    public string disk_string {
+        get;
+        set;
+    }
+    public string filePath {
+        get;
+        set;
+    }
+    public string genre {
+        get;
+        set;
+    }
+    public string title {
+        get;
+        set;
+    }
+    public string checksum {
+        get;
+        set;
+        default = "";
+    }
 
     public string to_string() {
         var sb = new StringBuilder();
@@ -71,3 +116,4 @@ public class Song :  GLib.Object {
         return sb.str;
     }
 }
+

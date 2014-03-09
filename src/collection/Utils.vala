@@ -1,4 +1,3 @@
-// modules: gio-2.0 gee-1.0 libtaginfo_c .
 public class Utils :  GLib.Object {
 
     public static string formatDate(int64 date) {
@@ -28,3 +27,4 @@ public class Utils :  GLib.Object {
     }
 
 }
+
